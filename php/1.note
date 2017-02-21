@@ -1,0 +1,10 @@
+1 session的存储方式
+在php.ini中，session的存储方式由session.handler和session.path这两个变量决定
+文件形式：
+session.save_handler = files
+session.save_path = /tmp/session.log
+redis形式：
+session.save_handle = redis
+session.save_path = tcp://127.0.0.1:6379
+如果redis有密码，则session.save_path改为
+session.save_path = tcp://127.0.0.1:6379?auth=password
