@@ -1,0 +1,16 @@
+关于git commit的版本号
+
+一般而言，每次commit，会产生一个唯一的版本号，(特殊情况下，不会产生版本号，甚至会删除版本号)
+
+若develop分支是通过fork master分支得到的，则develop会继承master的所有版本号以及附属信息(例如版本的提交人名称，邮箱，提交时间，备注)
+
+在develop分支上做修改后，通过git add和git commit提交代码，产生一个版本号，在合并之前，该版本号只属于develop分支
+
+通过git merge将develop合并到master分支，master同样会继承develop的所有版本号(从fork之后的版本开始)，且git merge本身会给master添加额外的一个版本号(包含合并信息)
+
+版本号的提交着，即当前git用户，如本地，则是~/.gitconfig中的用户，如线上，则是当前登录用户
+
+git push不会改变版本号以及附属信息
+
+git log: 查看当前分支的版本号列表
+git log develop: 查看develop分支的版本号列表
