@@ -1,0 +1,159 @@
+关于跨域解决
+跨域问题是由浏览器的同源策略引发的，和服务器无关，服务器端不存在跨域问题。
+
+
+在https页面中加载http的资源，如script，link，iframe，img，其中只有img能成功
+在http页面中加载https的资源，都能成功
+
+
+
+关于跨域，有一个例外的情况不会报错，即所有携带src属性的标签，在请求跨域的资源时，不会报错
+jsonp的本质是，通过script标签，请求一段js代码，在这段js代码中调用外部函数，实现数据交互
+，jsonp的本质是，返回一段js代码
+
+例如，在www.lifei.com页面中
+<script type="text/javascript">
+function temp(data){
+    console.log(data);
+}
+</script>
+<script type="text/javascript" src="http://m.kangqinmou.com/hello?world=temp&hello=cangtian"></script>
+
+在http://m.kangqinmou.com/hello页面中
+$result = array(
+    $_GET['hello'],
+    $_SERVER['REQUEST_METHOD'],
+    'diyu',
+);
+echo $_GET['world'].'('.json_encode($result).')';
+输出：['cangtian', 'GET', 'diyu']
+
+
+
+
+
+第2种方式
+使用iframe标签的src属性来实现跨域，这种方式仅限于根域与子域，或子域与子域之间
+例如，页面kangqinmou.com要使用m.kangqinmou.com/hello/world返回的数据
+
+kangqinmou.com页面
+<iframe src="http://m.kangqinmou.com"></iframe>
+<script type="text/javascript">
+    window.document.domain = 'kangqinmou.com';
+    delete window.hello;
+    var cid = setInterval(function(){
+        if(window.hello){
+            console.log(window.hello);
+            clearInterval(cid);
+        }
+    }, 1);
+</script>
+
+m.kangqinmou.com页面
+<script type="text/javascript">
+    window.document.domain = 'kangqinmou.com';
+    $(function(){
+        $.ajax({
+            url: '/hello/world',
+            type: 'post',
+            dataType: 'json',
+            data: {hello: 'cangtian'},
+            success: function(result){
+                window.top.hello = result;
+            },
+            error: function(){
+                console.log('服务器超时');
+            }
+        });
+    });
+</script>
+
+m.kangqinmou.com/hello/world页面
+$result = array(
+    $_POST['hello'],
+    $_SERVER['REQUEST_METHOD'],
+    'diyu',
+);
+echo json_encode($result);
+
+如上，在kangqinmou.com页面中嵌入iframe标签，src为m.kangqinmou.com页面，再在m.kangqinmou.com页面中发起对
+m.kangqinmou.com/hello/world的异步请求，并把请求结果放入一个公共变量中(如window.top.hello)
+在页面kangqinmou.com中，使用setInterval()循环判断公共变量window.top.hello是否已经赋值，结果输出为
+['cangtian', 'POST', 'diyu']
+
+需要注意的是，需要将参与跨域的两个页面的window.document.domain的值设为根域，如本例中的
+window.document.domain = 'kangqinmou.com';
+如果不设置domain为根域，将报错
+
+
+
+也可以在服务器端设置，来解决跨域问题
+例如，m.kangqinmou.com页面要向www.lifei.com页面发送异步请求，
+则可以在www.lifei.com的服务器端，即将m.kangqinmou.com设为访问控制允许来源
+
+www.lifei.com页面
+header('Access-Control-Allow-Origin:http://m.kangqinmou.com');
+$result = array(
+    $_POST['hello'],
+    $_SERVER['REQUEST_METHOD'],
+    'diyu',
+);
+echo json_encode($result);
+
+
+m.kangqinmou.com页面
+$(function(){
+    $.ajax({
+        url: 'http://www.lifei.com',
+        type: 'post',
+        dataType: 'json',
+        data: {hello: 'cangtian'},
+        success: function(result){
+            console.log(result);
+        },
+        error: function(){
+            console.log('服务器超时');
+        }
+    });
+});
+输出结果为['cangtian', 'POST', 'diyu']
+
+
+
+另一种方法，在m.kangqinmou.com的页面上做一层代理，因为服务器端不存在跨域问题
+m.kangqinmou.com页面
+$.ajax({
+    url: '/hello/world',
+    type: 'post',
+    dataType: 'json',
+    data: {hello: 'cangtian'},
+    success: function(result){
+        console.log(result);
+    },
+    error: function(){
+        console.log('服务器超时');
+    }
+});
+
+m.kangqinmou.com/hello/world页面
+$url = 'http://www.lifei.com';
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $_POST);
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+curl_setopt($ch, CURLOPT_HEADER, false);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$result = curl_exec($ch);
+echo $result;
+
+www.lifei.com页面
+$result = array(
+    $_POST['hello'],
+    $_SERVER['REQUEST_METHOD'],
+    'diyu',
+);
+echo json_encode($result);
+
+

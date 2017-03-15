@@ -1,0 +1,11 @@
+关于setcookie
+
+
+boolean setcookie($name, $value=null, $expire=null, $path=null, $domain=null, $secure=null, $httponly=null)
+
+
+$path和$domain没有关系，如果$path格式不正确(不以/开头)，则默认为根目录，如果在某个目录下设置了cookie，那么该cookie对于子目录也是可见的，
+对于父目录，自然是不可见的。对于chrome浏览器，路径是否以/结尾，是两回事，例如，/hello下的cookie，对/hello/是可见的，但是，/hello/下的cookie，
+对于/hello是不可见的
+
+$domain如果以点.开头，说明该cookie设在根域底下，例如$domain为.kangqinmou.com，则其它子域名均可访问该cookie，如m.kangqinmou.com

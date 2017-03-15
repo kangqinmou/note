@@ -8,9 +8,11 @@
 
 通过git merge将develop合并到master分支，master同样会继承develop的所有版本号(从fork之后的版本开始)，且git merge本身会给master添加额外的一个版本号(包含合并信息)
 
-版本号的提交着，即当前git用户，如本地，则是~/.gitconfig中的用户，如线上，则是当前登录用户
+版本号的所有者，即当前git用户，如本地，则是~/.gitconfig中的用户，如线上，则是当前登录用户
 
 git push不会改变版本号以及附属信息
 
 git log: 查看当前分支的版本号列表
 git log develop: 查看develop分支的版本号列表
+git log file：查看文件file的版本号列表
+
