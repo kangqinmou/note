@@ -7,3 +7,5 @@ git@github.com:kangqinmou/note.git
 测试git commit --amend与git push -f
 
 康师傅添加一行
+
+又来一行
